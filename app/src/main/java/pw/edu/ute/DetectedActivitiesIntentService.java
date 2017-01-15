@@ -10,10 +10,6 @@ import com.google.android.gms.location.DetectedActivity;
 
 import java.util.ArrayList;
 
-/**
- * Created by Bartolio on 18.12.2016.
- */
-
 public class DetectedActivitiesIntentService extends IntentService {
 
     protected static final String TAG = "DETECTION SERVICE";

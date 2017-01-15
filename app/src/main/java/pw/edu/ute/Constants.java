@@ -2,10 +2,6 @@ package pw.edu.ute;
 
 import com.google.android.gms.location.DetectedActivity;
 
-/**
- * Created by Bartolio on 18.12.2016.
- */
-
 public final class Constants {
 
     private Constants() {

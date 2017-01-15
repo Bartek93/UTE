@@ -40,18 +40,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener, ResultCallback<Status> {
 
-    private static final String API_KEY_DANE_PO_WARSZAWSKU = "0c934d94-a056-4143-babe-09326e3e0383";
-    private static final String ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU = "45ba10ab-6562-49ce-b572-6c9b999464d6";
+    public static final String API_KEY_DANE_PO_WARSZAWSKU = "0c934d94-a056-4143-babe-09326e3e0383";
+    public static final String ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU = "45ba10ab-6562-49ce-b572-6c9b999464d6";
 
 
     private static final String LOG_TAG = "MAIN_ACTIVITY_LOG";
@@ -125,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         //TODO dlaczego nie wyświetla wyników dla PRIORITY_BALANCED_POWER_ACCURACY - battery friendly
-        // TODO uzależnić interwał od activity recognition
+        //TODO uzależnić interwał od activity recognition
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(5 * 60 * 1000)
@@ -145,12 +140,23 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i(LOG_TAG, "Connection failed: " + connectionResult.getErrorCode());
     }
 
+    private double latitude;
+    private double longitude;
+
     @Override
     public void onLocationChanged(Location location) {
         Log.i(LOG_TAG, "Location changed: " + location.toString());
 
-        mLatitudeTxt.setText(Double.toString(location.getLatitude()));
-        mLongitudeTxt.setText(Double.toString(location.getLongitude()));
+        latitude = location.getLatitude();
+        longitude = location.getLongitude();
+        System.out.println("SET latitude = " + latitude);
+        System.out.println("SET longitude = " + longitude);
+
+        mLatitudeTxt.setText(Double.toString(latitude));
+        mLongitudeTxt.setText(Double.toString(longitude));
+
+//        mLatitudeTxt.setText(Double.toString(location.getLatitude()));
+//        mLongitudeTxt.setText(Double.toString(location.getLongitude()));
     }
 
     @Override
@@ -161,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // TODO permission was granted, yay! Do the task you need to do.
                 } else {
-                    // TODO ermission denied, boo! Disable the functionality that depends on this permission.
+                    // TODO permission denied, boo! Disable the functionality that depends on this permission.
                 }
                 return;
             }
@@ -296,48 +302,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         button = (Button) findViewById(R.id.button);
     }
 
-    //longitude = 20.xx, latitude = 52.xx mniej więcej
-    public String getJSONObjectFromURL(String longitude, String latitude, String radius) {
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        String url = "https://api.um.warszawa.pl/api/action/wfsstore_get/?" +
-                "id=" + ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU +
-                "&circle=" + longitude + "," + latitude + "," + radius +
-                "&apikey=" + API_KEY_DANE_PO_WARSZAWSKU;
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONObject obj = new JSONObject(response);
-                            JSONObject result = obj.getJSONObject("result");
-
-                            JSONArray arr = result.getJSONArray("featureMemberCoordinates");
-                            for (int i = 0; i < arr.length(); i++) {
-                                String latitude = arr.getJSONObject(i).getString("latitude");
-                                System.out.println("latitude = " + latitude);
-                                String longitude = arr.getJSONObject(i).getString("longitude");
-                                System.out.println("longitude = " + longitude);
-                            }
-                        } catch (JSONException exc) {
-                            Log.e(LOG_TAG, "That didn't work!", exc);
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(LOG_TAG, "That didn't work!");
-            }
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
-
-        return "";
-    }
-
     //Tylko do testu na przycisk Button
     public String getJSONObjectFromURL_Button(View view) {
         // Instantiate the RequestQueue.
@@ -378,6 +342,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         queue.add(stringRequest);
 
         return "";
+    }
+
+    public void mapOnClick(View view) {
+        Intent intent = new Intent(this, MapActivity.class);
+        intent.putExtra("latitude", latitude);
+        intent.putExtra("longitude", longitude);
+        startActivity(intent);
     }
 }
 
