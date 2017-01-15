@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="pw.edu.ute.MainActivity">
+
+    <TextView
+        android:id="@+id/latitude_label"
+        android:text="Latitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/latitude_txt"
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/latitude_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/latitude_label"
+        android:textIsSelectable="true"/>
+
+    <TextView
+        android:id="@+id/longitude_label"
+        android:text="Longitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="24dp"/>
+
+    <TextView
+        android:id="@+id/longitude_txt"
+        android:text=""
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/longitude_label"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/latitude_label"
+        android:textIsSelectable="true"/>
+
+    <Button
+        android:text="Request activity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="19dp"
+        android:id="@+id/request_activity_updates_button"
+        android:layout_below="@+id/longitude_label"
+        android:layout_alignParentStart="true"
+        android:onClick="requestActivityUpdatesButtonHandler"/>
+
+    <Button
+        android:text="Remove Activity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="11dp"
+        android:id="@+id/remove_activity_updates_button"
+        android:layout_below="@+id/request_activity_updates_button"
+        android:layout_alignParentStart="true"
+        android:onClick="removeActivityUpdatesButtonHandler"/>
+
+    <TextView
+        android:id="@+id/status_txt"
+        android:text="Status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/remove_activity_updates_button"
+        android:layout_alignEnd="@+id/longitude_label"
+        android:layout_marginTop="12dp"/>
+
+    <Button
+        android:text="Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/button"
+        android:onClick="getJSONObjectFromURL_Button"/>
+
+</RelativeLayout>

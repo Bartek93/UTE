@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">UTE</string>
+
+    <string name="in_vehicle">In a vehicle</string>
+    <string name="on_bicycle">On a bicycle</string>
+    <string name="on_foot">On foot</string>
+    <string name="running">Running</string>
+    <string name="still">still</string>
+    <string name="tilting">tilting</string>
+    <string name="unknown">unknown</string>
+    <string name="walking">walking</string>
+</resources>
