@@ -25,9 +25,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     private static final String LOG_TAG = "MAP_ACTIVITY_LOG";
 
-    public static final String API_KEY_DANE_PO_WARSZAWSKU = "0c934d94-a056-4143-babe-09326e3e0383";
-    public static final String ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU = "45ba10ab-6562-49ce-b572-6c9b999464d6";
-    private  static final int RADIUS = 2000;
+    private static final String API_KEY_DANE_PO_WARSZAWSKU = "0c934d94-a056-4143-babe-09326e3e0383";
+    private static final String ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU = "45ba10ab-6562-49ce-b572-6c9b999464d6";
+    private  static final int RADIUS = 2000; // in meter
 
     private GoogleMap mMap;
 
@@ -42,9 +42,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mapFragment.getMapAsync(this);
 
         latitude = getIntent().getDoubleExtra("latitude", 0);
-        System.out.println("GOT latitude = " + latitude);
         longitude = getIntent().getDoubleExtra("longitude", 0);
-        System.out.println("GOT longitude = " + longitude);
+        Log.d(LOG_TAG, "GOT latitude = " + latitude);
+        Log.d(LOG_TAG, "GOT longitude = " + longitude);
     }
 
     /**

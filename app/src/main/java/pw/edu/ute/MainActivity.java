@@ -45,6 +45,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener, ResultCallback<Status> {
 
+    public static final String API_KEY_ORANGE = "qr1d7R3Ag3gop06s1bzRuySh7fxukfSA";
     public static final String API_KEY_DANE_PO_WARSZAWSKU = "0c934d94-a056-4143-babe-09326e3e0383";
     public static final String ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU = "45ba10ab-6562-49ce-b572-6c9b999464d6";
 
@@ -70,6 +71,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private int permissionFineLocation;
     private int permissionCoarseLocation;
+
+    private  static final int RADIUS = 500; // in meter
+
+    private MessageSenderState state = MessageSenderState.ACTIVATED;
+    private boolean isMessageSent = false;
+
+    //TODO panel przy starcie apki do pobrania numerów
+    private String userNumber = "48111222333";
+    private String coworkerNumber = "48507354657"; // numer testowy
+    private String coworkerName = "Alicja";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,14 +161,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         latitude = location.getLatitude();
         longitude = location.getLongitude();
-        System.out.println("SET latitude = " + latitude);
-        System.out.println("SET longitude = " + longitude);
+        Log.d(LOG_TAG, "SET latitude = " + latitude);
+        Log.d(LOG_TAG, "SET longitude = " + longitude);
 
         mLatitudeTxt.setText(Double.toString(latitude));
         mLongitudeTxt.setText(Double.toString(longitude));
 
-//        mLatitudeTxt.setText(Double.toString(location.getLatitude()));
-//        mLongitudeTxt.setText(Double.toString(location.getLongitude()));
+        /**
+         * Rządanie zebrania lokalizacji sklepów
+         */
+        if(state == MessageSenderState.ACTIVATED) {
+            requestPlacesLocation();
+        }
     }
 
     @Override
@@ -184,6 +200,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //TODO synchronized?
     //TODO wybrać jaka dokładność jest nam potrzebna, wystarczy chyba Coarse Location
+    /**
+     * W nowyszych wersjach androida wymagane jest zezwolenie użytkownika na dostęp do pewnych danych
+     */
     private void accessPermission() {
         permissionFineLocation = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION);
         permissionCoarseLocation = ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -208,6 +227,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Wykrywacz aktywności ruchu użytkownika
+     */
     public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
 
         private static final String TAG = "RECEIVER";
@@ -227,6 +249,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Rządanie zaktualizowania aktywności ruchu użytkownika
+     * @param view
+     */
     public void requestActivityUpdatesButtonHandler(View view) {
         if(!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
@@ -240,6 +266,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mRemoveActivityBtn.setEnabled(true);
     }
 
+    /**
+     * Usunięcie aktualizowania aktywności ruchu użytkownika
+     * @param view
+     */
     public void removeActivityUpdatesButtonHandler(View view) {
         if(!mGoogleApiClient.isConnected()) {
             Toast.makeText(this, "Not connected", Toast.LENGTH_SHORT).show();
@@ -302,14 +332,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         button = (Button) findViewById(R.id.button);
     }
 
-    //Tylko do testu na przycisk Button
-    public String getJSONObjectFromURL_Button(View view) {
-        // Instantiate the RequestQueue.
+    /**
+     * Pobranie nieruchomości, które znajdują się w odległości RADIUS od lokalizacji użytkownika aplikacji
+     */
+    private void requestPlacesLocation() {
         RequestQueue queue = Volley.newRequestQueue(this);
 
         String url = "https://api.um.warszawa.pl/api/action/wfsstore_get/?" +
                 "id=" + ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU +
-                "&circle=20.970,52.276,2000" +
+                "&circle=" + longitude + "," + latitude + "," + RADIUS +
                 "&apikey=" + API_KEY_DANE_PO_WARSZAWSKU;
 
         // Request a string response from the provided URL.
@@ -327,28 +358,121 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                                 System.out.println("latitude = " + latitude);
                                 String longitude = arr.getJSONObject(i).getString("longitude");
                                 System.out.println("longitude = " + longitude);
+
+                                if(!isMessageSent) {
+                                    if(!latitude.equals("") && !longitude.equals("")){
+                                        Log.i(LOG_TAG, "Message is sending to Coworker: " + coworkerName);
+                                        //sendSmsToCoworker();
+                                    }
+                                }
                             }
                         } catch (JSONException exc) {
-                            Log.e(LOG_TAG, "That didn't work!", exc);
+                            Log.e(LOG_TAG, "Exception while parsing JSON Object", exc);
                         }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(LOG_TAG, "That didn't work!");
+                Log.e(LOG_TAG, "Error while receiving HTTP Response", error);
             }
         });
-        // Add the request to the RequestQueue.
         queue.add(stringRequest);
-
-        return "";
     }
 
+    /**
+     * Wysłanie sms do zapisanego coworkera.
+     * Jeśli wiadomość została wysłana blokowane jest dalsze wysyłanie sms.
+     * Zapytanie użytkownika aplikacji o deaktywacji wysyłania sms lub wstrzymania na jakis czas?
+     */
+    private void sendSmsToCoworker() {
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        String url = "https://apitest.orange.pl/Messaging/v1/SMSOnnet?" +
+                "to=" + coworkerNumber +
+                "&from=" + userNumber +
+                "&msg=" + Messages.msg1 +
+                "&deliverystatus=true" +
+                "&apikey=" + API_KEY_ORANGE;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject obj = new JSONObject(response);
+                            JSONObject result = obj.getJSONObject("result");
+
+                            String resultString = "";
+
+                            if(resultString == "OK") {
+                                Log.i(LOG_TAG, "Message was successfully sent to Coworker: " + coworkerName);
+                                isMessageSent = true;
+                            } else {
+                                Log.e(LOG_TAG, "Error while sending sms do Coworker: " +  coworkerName);
+                            }
+
+                        } catch (JSONException exc) {
+                            Log.e(LOG_TAG, "Exception while parsing JSON Object", exc);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(LOG_TAG, "Error while receiving HTTP Response", error);
+            }
+        });
+        queue.add(stringRequest);
+    }
+
+    /**
+     * Uruchomienie mapy ze znacznikami
+     * @param view
+     */
     public void mapOnClick(View view) {
         Intent intent = new Intent(this, MapActivity.class);
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
         startActivity(intent);
+    }
+
+    /**
+     * Tylko do testu na przycisk Button
+     * @param view
+     */
+    public void getJSONObjectFromURL_Button(View view) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        String url = "https://api.um.warszawa.pl/api/action/wfsstore_get/?" +
+                "id=" + ID_NIERUCHOMOSC_WYNAJEM_DANE_PO_WARSZAWSKU +
+                "&circle=" + longitude + "," + latitude + "," + RADIUS +
+                "&apikey=" + API_KEY_DANE_PO_WARSZAWSKU;
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject obj = new JSONObject(response);
+                            JSONObject result = obj.getJSONObject("result");
+
+                            JSONArray arr = result.getJSONArray("featureMemberCoordinates");
+                            for (int i = 0; i < arr.length(); i++) {
+                                String latitude = arr.getJSONObject(i).getString("latitude");
+                                System.out.println("latitude = " + latitude);
+                                String longitude = arr.getJSONObject(i).getString("longitude");
+                                System.out.println("longitude = " + longitude);
+                            }
+                        } catch (JSONException exc) {
+                            Log.e(LOG_TAG, "Exception while parsing JSON Object", exc);
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(LOG_TAG, "Error while receiving HTTP Response", error);
+            }
+        });
+        queue.add(stringRequest);
     }
 }
 
